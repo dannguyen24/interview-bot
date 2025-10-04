@@ -1,0 +1,13 @@
+{
+  "modules": ["nodejs-18"],
+  "entrypoint": "frontend/pages/index.tsx",
+  "run": [
+    "cd frontend && npm install && npm run dev"
+  ],
+  "ignore": [
+    "node_modules",
+    "frontend/node_modules",
+    ".next",
+    "backend"
+  ]
+}
