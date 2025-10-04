@@ -47,6 +47,8 @@
 
 This document specifies the **exact data formats** and **WebSocket messages** between the frontend (Next.js) and backend (Python/FastAPI) for the Interview Bot application.
 
+**TypeScript Definitions**: All types are defined in `frontend/types/api.ts` for type safety and consistency.
+
 ## 🔌 WebSocket Connection
 
 ### **Connection Details**
@@ -111,15 +113,26 @@ FormData {
 {
   title: string,                    // Job title
   company: string,                  // Company name
-  location: string,                 // Job location
-  description: string,              // Full job description
-  requirements: string[],           // Required skills/qualifications
-  responsibilities: string[],       // Job responsibilities
-  benefits: string[],              // Benefits and perks
-  salary?: string,                 // Salary range (if available)
-  employmentType?: string,         // Full-time, Part-time, Contract, etc.
-  experienceLevel?: string,        // Entry, Mid, Senior, etc.
-  remote?: boolean                 // Remote work availability
+  location: string,                 // Job location (city, state)
+  country: string,                  // Country
+  employment_type: string,          // Full-time, Part-time, Contract, etc.
+  date_posted: string,              // Date job was posted (ISO 8601 format)
+  valid_through: string,            // Date job posting expires (ISO 8601 format)
+  description: string               // Full job description text
+}
+```
+
+**Example Response**:
+```json
+{
+  "title": "Senior Software Engineer",
+  "company": "Tech Corp",
+  "location": "San Francisco, CA",
+  "country": "United States",
+  "employment_type": "Full-time",
+  "date_posted": "2025-10-01T00:00:00Z",
+  "valid_through": "2025-11-01T00:00:00Z",
+  "description": "We're looking for a senior software engineer to join our team. You will be responsible for developing scalable web applications using React, Node.js, and Python. The ideal candidate has 5+ years of experience in full-stack development..."
 }
 ```
 
@@ -312,14 +325,11 @@ const result = await response.json()
     title: string,
     company: string,
     location: string,
-    description: string,
-    requirements: string[],
-    responsibilities: string[],
-    benefits: string[],
-    salary?: string,
-    employmentType?: string,
-    experienceLevel?: string,
-    remote?: boolean
+    country: string,
+    employment_type: string,
+    date_posted: string,
+    valid_through: string,
+    description: string
   }
 }
 ```
@@ -346,14 +356,11 @@ socket.emit('start_interview', {
     title: "Senior Software Engineer",
     company: "Tech Corp",
     location: "San Francisco, CA",
-    description: "We're looking for a senior software engineer...",
-    requirements: ["5+ years Python", "React experience", "AWS knowledge"],
-    responsibilities: ["Lead development", "Mentor junior developers"],
-    benefits: ["Health insurance", "401k", "Flexible hours"],
-    salary: "$120,000 - $150,000",
-    employmentType: "Full-time",
-    experienceLevel: "Senior",
-    remote: true
+    country: "United States",
+    employment_type: "Full-time",
+    date_posted: "2025-10-01T00:00:00Z",
+    valid_through: "2025-11-01T00:00:00Z",
+    description: "We're looking for a senior software engineer to join our team. You will be responsible for developing scalable web applications using React, Node.js, and Python. The ideal candidate has 5+ years of experience in full-stack development, strong problem-solving skills, and excellent communication abilities. Requirements include React, Node.js, Python, AWS, Docker, and agile methodologies."
   }
 })
 ```
