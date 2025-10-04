@@ -3,32 +3,32 @@ import requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from app.core.config import settings
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 client = OpenAI(api_key=settings.openai_api_key)
 
 
-def extract_job_details_with_llm(text: str) -> dict:
-    """Ask the LLM to extract specific fields and return a JSON object with snake_case keys.
+def extract_job_description(text: str) -> dict:
 
-    Keys returned (strings or null):
-      - title, company, location, country, employment_type, date_posted, valid_through,
-      - about_company, responsibility, requirement
-    """
+    # Always return a dict with the expected keys and string values (empty if missing)
+    empty_out = {"about_company": "", "responsibility": "", "requirement": ""}
+    if text is None or text.strip() == "":
+        return empty_out
     prompt = f"""
-        Extract the following fields from the text. Return ONLY a JSON object with these exact keys (use null for missing values):
+        Extract the following fields from the description. 
+        Return ONLY a JSON object with these exact keys (use null for missing values):
         {{
-        "title": null,
-        "company": null,
-        "location": null,
-        "country": null,
-        "employment_type": null,
-        "date_posted": null,
-        "valid_through": null,
-        "about_company": null,
-        "responsibility": null,
-        "requirement": null
-        }}
 
+            "about_company": null,
+            "responsibility": null,
+            "requirement": null
+        }}
+        about_company: A brief description of the company. What's the company's mission and values.
+        responsibility: A summary of the job responsibilities and tasks.
+        requirement: A summary of the job requirements and qualifications.
         Text:
     """
     prompt += text
@@ -40,57 +40,49 @@ def extract_job_details_with_llm(text: str) -> dict:
             max_output_tokens=800,
             temperature=0,
         )
-        # Different SDK shapes: find text
-        raw = None
+        raw_text = None
         if hasattr(resp, "output") and resp.output:
-            # new responses API
-            # try to join all text content pieces
-            parts = []
+            pieces = []
             for o in resp.output:
                 for c in getattr(o, "content", []):
-                    # c may have .text or .type
+                    # handle dict content shape or object with .text
                     if isinstance(c, dict) and c.get("type") == "output_text":
-                        parts.append(c.get("text", ""))
+                        pieces.append(c.get("text", ""))
                     elif getattr(c, "text", None):
-                        parts.append(c.text)
-            raw = "\n".join(parts)
+                        pieces.append(c.text)
+            raw_text = "\n".join(pieces).strip()
         else:
-            raw = str(resp)
+            # fallback to string rendering
+            raw_text = str(resp)
 
-        parsed = json.loads(raw)
-        # normalize keys to expected set
-        keys = [
-            "title",
-            "company",
-            "location",
-            "country",
-            "employment_type",
-            "date_posted",
-            "valid_through",
-            "about_company",
-            "responsibility",
-            "requirement",
-        ]
-        return {k: (parsed.get(k) if parsed.get(k) is not None else None) for k in keys}
-    except Exception:
-        # on failure return all None
-        return {k: None for k in [
-            "title",
-            "company",
-            "location",
-            "country",
-            "employment_type",
-            "date_posted",
-            "valid_through",
-            "about_company",
-            "responsibility",
-            "requirement",
-        ]}
+        # Find JSON substring if model returned extra text (robust parsing)
+        try:
+            parsed = json.loads(raw_text)
+        except json.JSONDecodeError:
+            import re
+            m = re.search(r"\{.*\}", raw_text, flags=re.S)
+            if not m:
+                logger.warning("LLM output not JSON: %s", raw_text[:400])
+                return None, None, None
+            parsed = json.loads(m.group(0))
+
+        # normalize and return strings (empty string for missing/null)
+        out = {
+            "about_company": parsed.get("about_company") or "",
+            "responsibility": parsed.get("responsibility") or "",
+            "requirement": parsed.get("requirement") or "",
+        }
+
+        return out
+
+    except Exception as e:
+        logger.exception("extract_job_description failed: %s", e)
+        # on failure return empty fields
+        return empty_out
 
 
 def parse_json_ld(url: str) -> dict | None:
     """Fetch URL and extract job details using ld+json if available, otherwise fall back to heuristics and LLM.
-
     Returns a dict with the keys requested by the frontend (strings or empty string).
     """
     try:
@@ -101,7 +93,7 @@ def parse_json_ld(url: str) -> dict | None:
 
     soup = BeautifulSoup(response.text, "html.parser")
     scripts = soup.find_all("script", type="application/ld+json")
-    print(soup)
+    # print(soup)
     def _s(x):
         return x if isinstance(x, str) else (str(x) if x is not None else "")
 
@@ -111,67 +103,40 @@ def parse_json_ld(url: str) -> dict | None:
             raw = script.string
             if not raw:
                 continue
-            data = json.loads(raw)
-            items = data if isinstance(data, list) else [data]
-            for item in items:
-                if item.get("@type") != "JobPosting":
-                    continue
-
-                hiring = item.get("hiringOrganization") or {}
-                job_location = item.get("jobLocation") or {}
-                address = job_location.get("address") or {}
-
-                title = _s(item.get("title") or item.get("name") or "")
-                company = _s(hiring.get("name") or "")
-                location = _s(address.get("addressLocality") or "")
-                country = _s(address.get("addressCountry") or "")
-                employment_type = _s(item.get("employmentType") or "")
-                date_posted = _s(item.get("datePosted") or "")
-                valid_through = _s(item.get("validThrough") or "")
-                # treat description as plain text and ask LLM to extract about_company, responsibility, requirement
-                description = _s(item.get("description") or hiring.get("description") or "")
-
-                # ask LLM to extract fields from description text
-                if description:
-                    llm_out = extract_job_details_with_llm(description)
-                else:
-                    llm_out = {k: None for k in [
-                        "title",
-                        "company",
-                        "location",
-                        "country",
-                        "employment_type",
-                        "date_posted",
-                        "valid_through",
-                        "about_company",
-                        "responsibility",
-                        "requirement",
-                    ]}
-
-                about_company = _s(llm_out.get("about_company") or "")
-                responsibility = _s(llm_out.get("responsibility") or "")
-                requirement = _s(llm_out.get("requirement") or "")
-
-                return {
-                    "title": title,
-                    "company": company,
-                    "location": location,
-                    "country": country,
-                    "employment_type": employment_type,
-                    "date_posted": date_posted,
-                    "valid_through": valid_through,
-                    "about_company": about_company,
-                    "responsibility": responsibility,
-                    "requirement": requirement,
-                }
         except Exception:
             continue
-
-    # Fallback: ask LLM on the full page text
-    page_text = soup.get_text("\n", strip=True)
-    if page_text:
-        llm_out = extract_job_details_with_llm(page_text)
-        # convert None to empty strings for consistent frontend shape
-        return {k: (v or "") for k, v in llm_out.items()}
-
-    return None
+        try:    
+            data = json.loads(raw)
+            # sometimes it's a list of objects
+            if isinstance(data, list):
+                for entry in data:
+                    if entry.get("@type") == "JobPosting":
+                        data = entry
+                        break
+            elif isinstance(data, dict) and data.get("@type") == "JobPosting":
+                pass
+            else:
+                continue
+            llm_out = extract_job_description(data.get("description") or "")
+            about_company = llm_out.get("about_company", "")
+            responsibility = llm_out.get("responsibility", "")
+            requirement = llm_out.get("requirement", "")
+            print("EXTRACTED", about_company, responsibility, requirement)
+            job = {
+                "title": _s(data.get("title")),
+                "company": _s(data.get("hiringOrganization", {}).get("name") or data.get("hiringOrganization")),
+                "location": _s(data.get("jobLocation", {}).get("address", {}).get("addressLocality") or
+                               (data.get("jobLocation", {}).get("address", {}).get("addressRegion") or "")),
+                "country": _s(data.get("jobLocation", {}).get("address", {}).get("addressCountry") or ""),
+                "employment_type": _s(data.get("employmentType") or ""),
+                "date_posted": _s(data.get("datePosted") or ""),
+                "valid_through": _s(data.get("validThrough") or ""),
+                "description": _s(data.get("description") or ""),
+                "about_company": _s(about_company) if about_company else "",
+                "responsibility": _s(responsibility) if responsibility else "",
+                "requirement": _s(requirement) if requirement else "",
+            }
+            return job
+        except Exception:
+            print("Failed to parse ld+json script")
+            continue

@@ -8,7 +8,6 @@ router = APIRouter()
 class JobUrlRequest(BaseModel):
     url: str
 
-
 class SimpleJobDoc(BaseModel):
     title: str | None = None
     company: str | None = None
@@ -18,6 +17,9 @@ class SimpleJobDoc(BaseModel):
     date_posted: str | None = None
     valid_through: str | None = None
     description: str | None = None
+    about_company: str | None = None
+    responsibility: str | None = None
+    requirement: str | None = None
 
 
 @router.post("/parse-job-description", response_model=SimpleJobDoc)
