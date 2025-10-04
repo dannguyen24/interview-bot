@@ -134,8 +134,8 @@ export default function Interview() {
         isComplete: true
       }))
       
-      // Store results and navigate
-      localStorage.setItem('interviewResults', JSON.stringify(results))
+      // Store results in sessionStorage (temporary - will be saved to MongoDB on results page)
+      sessionStorage.setItem('currentInterviewResults', JSON.stringify(results))
       setTimeout(() => {
         router.push('/results')
       }, 3000)

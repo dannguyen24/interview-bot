@@ -29,28 +29,87 @@ export default function Results() {
   const router = useRouter()
   const [results, setResults] = useState<InterviewResults | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    // Get results from localStorage
-    const savedResults = localStorage.getItem('interviewResults')
-    if (savedResults) {
-      try {
-        setResults(JSON.parse(savedResults))
-      } catch (error) {
-        console.error('Failed to parse results:', error)
+    // Get results from sessionStorage (temporary) or query params (from dashboard)
+    const savedResults = sessionStorage.getItem('currentInterviewResults')
+    const interviewId = router.query.interviewId as string
+    
+    const loadResults = async () => {
+      if (savedResults) {
+        // Fresh interview results from sessionStorage
+        try {
+          const parsedResults = JSON.parse(savedResults)
+          setResults(parsedResults)
+          
+          // Save to MongoDB if user is authenticated
+          if (!interviewId) {
+            await saveInterviewToDatabase(parsedResults)
+          }
+        } catch (error) {
+          console.error('Failed to parse results:', error)
+        }
+      } else if (interviewId) {
+        // Loading old interview from dashboard
+        try {
+          const response = await fetch(`/api/user/get-interview?interviewId=${interviewId}`)
+          if (response.ok) {
+            const data = await response.json()
+            setResults(data.interview.results)
+          }
+        } catch (error) {
+          console.error('Failed to load interview:', error)
+        }
       }
+      setIsLoading(false)
     }
-    setIsLoading(false)
-  }, [])
+
+    loadResults()
+  }, [router.query.interviewId])
+
+  const saveInterviewToDatabase = async (interviewResults: InterviewResults) => {
+    setIsSaving(true)
+    try {
+      const parsedResume = localStorage.getItem('parsedResume')
+      const parsedJobDescription = localStorage.getItem('parsedJobDescription')
+
+      const response = await fetch('/api/user/save-interview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          interviewResults,
+          parsedResume: parsedResume ? JSON.parse(parsedResume) : null,
+          parsedJobDescription: parsedJobDescription ? JSON.parse(parsedJobDescription) : null,
+        }),
+      })
+
+      if (response.ok) {
+        console.log('✅ Interview saved to database')
+        // Clear temporary session data
+        sessionStorage.removeItem('currentInterviewResults')
+      } else if (response.status === 401) {
+        console.log('⚠️ User not authenticated - results not saved to database')
+      }
+    } catch (error) {
+      console.error('Failed to save interview:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const handleStartNewInterview = () => {
-    // Clear stored data
-    localStorage.removeItem('jobDescription')
-    localStorage.removeItem('resume')
-    localStorage.removeItem('interviewResults')
+    // Clear temporary session data
+    sessionStorage.removeItem('currentInterviewResults')
+    localStorage.removeItem('parsedResume')
+    localStorage.removeItem('parsedJobDescription')
+    localStorage.removeItem('jobDescriptionUrl')
+    localStorage.removeItem('resumeFileName')
     
-    // Navigate back to home
-    router.push('/')
+    // Navigate to upload page
+    router.push('/upload')
   }
 
   const getScoreColor = (score: number) => {
