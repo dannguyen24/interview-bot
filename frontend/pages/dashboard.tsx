@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import { mockInterviewHistory, isMockMode } from '../lib/mockData'
 
 interface InterviewHistoryItem {
   id: string
@@ -17,9 +18,18 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Load interview history from MongoDB
+    // Load interview history from MongoDB or mock data
     const loadHistory = async () => {
       try {
+        // Check if in mock mode
+        if (isMockMode()) {
+          console.log('🧪 Mock mode - using mock interview history')
+          setInterviewHistory(mockInterviewHistory)
+          setIsLoading(false)
+          return
+        }
+
+        // Real API call
         const response = await fetch('/api/user/get-interviews')
         
         if (response.ok) {
@@ -40,8 +50,18 @@ export default function Dashboard() {
   }, [router])
 
   const handleViewResult = async (interviewId: string) => {
-    // Load specific interview from MongoDB and navigate
+    // Load specific interview from MongoDB or use mock data
     try {
+      // Check if in mock mode
+      if (isMockMode()) {
+        console.log('🧪 Mock mode - loading mock interview results')
+        const { mockInterviewResults } = await import('../lib/mockData')
+        sessionStorage.setItem('currentInterviewResults', JSON.stringify(mockInterviewResults))
+        router.push(`/results?interviewId=${interviewId}`)
+        return
+      }
+
+      // Real API call
       const response = await fetch(`/api/user/get-interview?interviewId=${interviewId}`)
       
       if (response.ok) {

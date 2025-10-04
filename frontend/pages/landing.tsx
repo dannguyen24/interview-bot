@@ -1,13 +1,25 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { useSession } from 'next-auth/react'
 import Head from 'next/head'
 import LoginModal from '../components/LoginModal'
 import SignupModal from '../components/SignupModal'
+import { isMockMode } from '../lib/mockData'
 
 export default function Landing() {
   const router = useRouter()
-  const { data: session } = useSession()
+  
+  // Conditionally use session based on mock mode
+  let session = null
+  if (!isMockMode()) {
+    try {
+      const { useSession } = require('next-auth/react')
+      const sessionData = useSession()
+      session = sessionData.data
+    } catch (error) {
+      console.log('NextAuth not available in mock mode')
+    }
+  }
+  
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showSignupModal, setShowSignupModal] = useState(false)
 

@@ -45,14 +45,15 @@ You can now test **all frontend pages** without a backend implementation using m
 | **Upload** | `/upload` | UI, validation, mock data mode |
 | **Ready** | `/ready` | Everything with mock data |
 | **Results** | `/results` | Everything with mock data |
-| **Dashboard** | `/dashboard` | UI (needs auth or mock) |
+| **Dashboard** | `/dashboard` | Everything with mock data |
+| **Interview** | `/interview` | Everything with mock WebSocket |
 | **Test** | `/test` | Everything - testing hub |
 
 ### **⚠️ Partially Functional**
 
 | Page | URL | What Works | What Doesn't |
 |------|-----|------------|--------------|
-| **Interview** | `/interview` | UI, layout, components | WebSocket connection, real questions |
+| **Interview** | `/interview` | Everything with mock WebSocket | None - fully functional |
 
 ---
 
@@ -81,6 +82,14 @@ You can now test **all frontend pages** without a backend implementation using m
 - Strengths and improvement areas
 - Micro-drills for practice
 - Pain points with timestamps
+- Follow-up question
+
+### **Interview History**:
+- 3 past interviews with different companies
+- Scores: 78, 65, 82
+- All completed
+- Dates: Oct 3, Sep 28, Sep 20
+- Clickable to view full results
 
 ---
 
@@ -114,6 +123,31 @@ You can now test **all frontend pages** without a backend implementation using m
 4. See STAR analysis
 5. Check strengths/improvements
 6. Review micro-drills
+7. Check follow-up question section (bottom)
+
+### **Test Dashboard Flow**:
+
+1. Go to `/test`
+2. Click "Dashboard Page (with mock data)"
+3. See 3 past interviews displayed
+4. Click any interview card
+5. View full results for that interview
+6. Click "Start New Interview" to go to upload page
+
+### **Test Interview Flow (Full WebSocket Simulation)**:
+
+1. Go to `/test`
+2. Click "Interview Page (with mock WebSocket)"
+3. Wait for connection (500ms delay)
+4. See "Generating questions..." (2s delay)
+5. First question appears with audio player
+6. Click play to hear mock TTS audio (1.5s delay)
+7. Record your answer using the microphone
+8. See "AI is analyzing your answer..." (3s delay)
+9. Progress to next question automatically
+10. Repeat for all 8 questions
+11. See "Interview Complete!" (2s delay)
+12. Automatically redirect to results page
 
 ---
 

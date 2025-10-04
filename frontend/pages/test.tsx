@@ -51,9 +51,20 @@ export default function TestPage() {
 
   const setupMockDashboard = () => {
     enableMockMode()
-    // For dashboard, you'll need to be "logged in" or implement guest mock
-    alert('Note: Dashboard requires authentication. For now, it will show empty state or redirect to login.')
+    console.log('🧪 Mock mode enabled - dashboard will show mock interview history')
     router.push('/dashboard')
+  }
+
+  const setupMockInterview = () => {
+    enableMockMode()
+    console.log('🧪 Mock mode enabled - interview will use mock WebSocket')
+    
+    // Set up mock data for interview
+    localStorage.setItem('parsedResume', JSON.stringify(mockParsedResume))
+    localStorage.setItem('parsedJobDescription', JSON.stringify(mockParsedJobDescription))
+    localStorage.setItem('resumeFileName', 'test-resume.pdf')
+    
+    router.push('/interview')
   }
 
   return (
@@ -104,6 +115,20 @@ export default function TestPage() {
                 <button onClick={setupMockDashboard}>
                   Dashboard Page
                 </button>
+                <button onClick={setupMockInterview}>
+                  Interview Page (with mock WebSocket)
+                </button>
+                <button onClick={() => {
+                  enableMockMode()
+                  router.push('/debug-websocket')
+                }}>
+                  WebSocket Debug Page
+                </button>
+                <button onClick={() => {
+                  router.push('/debug-interview')
+                }}>
+                  Interview Debug Page
+                </button>
               </div>
             </section>
 
@@ -123,7 +148,7 @@ export default function TestPage() {
                   <strong>Results:</strong> Overall Score: {mockInterviewResults.overallScore}/100
                 </div>
                 <div className="data-item">
-                  <strong>History:</strong> {mockInterviewHistory.length} past interviews
+                  <strong>History:</strong> {mockInterviewHistory.length} past interviews (clickable on dashboard)
                 </div>
               </div>
             </section>
@@ -157,11 +182,11 @@ export default function TestPage() {
                 <p><strong>What Works Without Backend:</strong></p>
                 <ul>
                   <li>✅ Landing page (fully functional)</li>
-                  <li>✅ Upload page UI (no actual parsing)</li>
+                  <li>✅ Upload page UI (mock mode available)</li>
                   <li>✅ Ready page (with mock data)</li>
-                  <li>⚠️ Interview page (WebSocket will fail, but UI visible)</li>
-                  <li>✅ Results page (with mock data)</li>
-                  <li>⚠️ Dashboard (requires auth or mock)</li>
+                  <li>✅ Interview page (with full mock WebSocket simulation!)</li>
+                  <li>✅ Results page (with mock data + follow-up question)</li>
+                  <li>✅ Dashboard (with mock interview history - clickable!)</li>
                 </ul>
                 <p><strong>What Needs Backend:</strong></p>
                 <ul>
