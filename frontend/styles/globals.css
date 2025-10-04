@@ -785,10 +785,17 @@ a {
   backdrop-filter: blur(10px);
 }
 
+.follow-up-question p {
+  color: white;
+  margin: 0.5rem 0;
+}
+
 .follow-up-text {
   font-size: 1.2rem;
   font-style: italic;
   margin-top: 1rem;
+  color: white;
+  line-height: 1.6;
 }
 
 .results-footer {

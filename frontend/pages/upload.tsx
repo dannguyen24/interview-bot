@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import { mockParsedResume, mockParsedJobDescription, isMockMode } from '../lib/mockData'
 
 export default function Upload() {
   const router = useRouter()
@@ -58,6 +59,24 @@ export default function Upload() {
     setIsUploading(true)
     
     try {
+      // Check if in mock mode
+      if (isMockMode()) {
+        console.log('🧪 Mock mode enabled - using mock data')
+        
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
+        // Use mock data
+        localStorage.setItem('jobDescriptionUrl', jobDescriptionUrl)
+        localStorage.setItem('parsedResume', JSON.stringify(mockParsedResume))
+        localStorage.setItem('parsedJobDescription', JSON.stringify(mockParsedJobDescription))
+        localStorage.setItem('resumeFileName', resumeFile.name)
+        
+        router.push('/ready')
+        return
+      }
+
+      // Real backend calls (when not in mock mode)
       // Step 1: Upload resume file to backend for parsing
       const resumeFormData = new FormData()
       resumeFormData.append('resume', resumeFile)

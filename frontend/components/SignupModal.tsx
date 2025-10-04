@@ -13,7 +13,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -44,7 +43,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
         body: JSON.stringify({
           email,
           password,
-          name,
         }),
       })
 
@@ -92,17 +90,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
               {error}
             </div>
           )}
-
-          <div className="form-group">
-            <label htmlFor="name">Name (Optional)</label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-            />
-          </div>
 
           <div className="form-group">
             <label htmlFor="email">Email</label>

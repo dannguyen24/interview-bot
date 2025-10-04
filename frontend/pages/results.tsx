@@ -224,35 +224,35 @@ export default function Results() {
         <section className="questions-analysis">
           <h2>📋 Question Analysis</h2>
           <div className="questions-list">
-            {results.questions.map((q, index) => (
+            {results.questions.map((qa, index) => (
               <div key={index} className="question-analysis">
                 <div className="question-header">
-                  <h3>Question {index + 1}</h3>
+                  <h3>Question {index + 1}: {qa.question.type}</h3>
                   <div 
                     className="question-score"
-                    style={{ color: getScoreColor(q.score) }}
+                    style={{ color: getScoreColor(qa.analysis.score) }}
                   >
-                    {q.score}/100
+                    {qa.analysis.score}/100
                   </div>
                 </div>
                 
                 <div className="question-content">
-                  <p className="question-text">"{q.question}"</p>
+                  <p className="question-text">"{qa.question.text}"</p>
                   
                   <div className="star-analysis">
                     <h4>STAR Method Analysis:</h4>
                     <div className="star-elements">
-                      <span className={`star-element ${q.starElements.situation ? 'present' : 'missing'}`}>
-                        {q.starElements.situation ? '✅' : '❌'} Situation
+                      <span className={`star-element ${qa.analysis?.star?.situation ? 'present' : 'missing'}`}>
+                        {qa.analysis?.star?.situation ? '✅' : '❌'} Situation
                       </span>
-                      <span className={`star-element ${q.starElements.task ? 'present' : 'missing'}`}>
-                        {q.starElements.task ? '✅' : '❌'} Task
+                      <span className={`star-element ${qa.analysis?.star?.task ? 'present' : 'missing'}`}>
+                        {qa.analysis?.star?.task ? '✅' : '❌'} Task
                       </span>
-                      <span className={`star-element ${q.starElements.action ? 'present' : 'missing'}`}>
-                        {q.starElements.action ? '✅' : '❌'} Action
+                      <span className={`star-element ${qa.analysis?.star?.action ? 'present' : 'missing'}`}>
+                        {qa.analysis?.star?.action ? '✅' : '❌'} Action
                       </span>
-                      <span className={`star-element ${q.starElements.result ? 'present' : 'missing'}`}>
-                        {q.starElements.result ? '✅' : '❌'} Result
+                      <span className={`star-element ${qa.analysis?.star?.result ? 'present' : 'missing'}`}>
+                        {qa.analysis?.star?.result ? '✅' : '❌'} Result
                       </span>
                     </div>
                   </div>
@@ -260,21 +260,21 @@ export default function Results() {
                   <div className="metrics">
                     <div className="metric">
                       <span className="metric-label">Keywords Found:</span>
-                      <span className="metric-value">{q.keywordsFound.length}</span>
+                      <span className="metric-value">{qa.analysis?.keywordsFound?.length || 0}</span>
                     </div>
                     <div className="metric">
                       <span className="metric-label">Filler Words:</span>
-                      <span className="metric-value">{q.fillerWords}</span>
+                      <span className="metric-value">{qa.analysis?.fillerWords || 0}</span>
                     </div>
                     <div className="metric">
                       <span className="metric-label">Time Spent:</span>
-                      <span className="metric-value">{q.timeSpent}s</span>
+                      <span className="metric-value">{qa.analysis?.timeSpent || 0}s</span>
                     </div>
                   </div>
 
                   <div className="feedback">
                     <h4>AI Feedback:</h4>
-                    <p>{q.feedback}</p>
+                    <p>{qa.analysis?.feedback || 'No feedback available'}</p>
                   </div>
                 </div>
               </div>

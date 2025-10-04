@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { email, password, name } = req.body
+    const { email, password } = req.body
 
     // Validation
     if (!email || !password) {
@@ -45,7 +45,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const result = await usersCollection.insertOne({
       email: email.toLowerCase(),
       password: hashedPassword,
-      name: name || email.split('@')[0],
       createdAt: new Date(),
       interviewHistory: []
     })
