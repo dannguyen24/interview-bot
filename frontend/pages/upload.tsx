@@ -211,7 +211,7 @@ export default function Upload() {
       <style jsx>{`
         .upload-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           padding: 2rem;
           position: relative;
         }
@@ -221,22 +221,19 @@ export default function Upload() {
           top: 2rem;
           right: 2rem;
           background: white;
-          color: #2c3e50;
-          border: 2px solid #3498db;
+          color: #667eea;
+          border: none;
           padding: 0.75rem 1.5rem;
           font-size: 1rem;
           font-weight: 600;
           border-radius: 8px;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
         }
 
         .dashboard-nav-button:hover {
-          background: #3498db;
-          color: white;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+          transform: scale(1.05);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .upload-main {
@@ -245,26 +242,26 @@ export default function Upload() {
         }
 
         .upload-card {
-          background: white;
-          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          border-radius: 24px;
           padding: 3rem;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-          border: 1px solid #e1e8ed;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .upload-title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #2c3e50;
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #667eea;
           margin-bottom: 0.5rem;
           text-align: center;
         }
 
         .upload-subtitle {
-          color: #7f8c8d;
+          color: #666;
           text-align: center;
           margin-bottom: 2.5rem;
-          font-size: 1rem;
+          font-size: 1.125rem;
         }
 
         .upload-form {
@@ -280,63 +277,54 @@ export default function Upload() {
         }
 
         .input-group label {
-          font-weight: 600;
-          color: #34495e;
-          font-size: 0.95rem;
-          letter-spacing: 0.3px;
+          font-weight: 700;
+          color: #333;
+          font-size: 1rem;
         }
 
         .url-input {
           width: 100%;
           padding: 1rem;
-          border: 2px solid #e1e8ed;
-          border-radius: 8px;
+          border: 2px solid #e0e0e0;
+          border-radius: 12px;
           font-size: 1rem;
           transition: all 0.3s ease;
-          background: #f8f9fa;
         }
 
         .url-input:focus {
           outline: none;
-          border-color: #3498db;
-          background: white;
-          box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .url-input.valid {
-          border-color: #27ae60;
+          border-color: #4CAF50;
           background: #f0f9f4;
         }
 
         .url-input.invalid {
-          border-color: #e74c3c;
-          background: #fef5f5;
+          border-color: #f44336;
+          background: #ffebee;
         }
 
         .url-error {
-          color: #e74c3c;
+          color: #f44336;
           font-size: 0.875rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
           margin-top: 0.25rem;
         }
 
         .url-success {
-          color: #27ae60;
+          color: #4CAF50;
           font-size: 0.875rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
           margin-top: 0.25rem;
           font-weight: 500;
         }
 
         .supported-sites {
-          color: #95a5a6;
+          color: #999;
           font-size: 0.8rem;
           margin-top: 0.5rem;
-          line-height: 1.5;
+          line-height: 1.4;
         }
 
         .file-upload-container {
@@ -357,18 +345,17 @@ export default function Upload() {
           display: block;
           width: 100%;
           padding: 2.5rem;
-          border: 2px dashed #cbd5e0;
+          border: 2px dashed #e0e0e0;
           border-radius: 12px;
           text-align: center;
           cursor: pointer;
           transition: all 0.3s ease;
-          background: #f8f9fa;
+          background: #fafafa;
         }
 
         .file-upload-label:hover {
-          border-color: #3498db;
-          background: #f0f7ff;
-          box-shadow: 0 4px 12px rgba(52, 152, 219, 0.1);
+          border-color: #667eea;
+          background: #f8f9ff;
         }
 
         .file-placeholder {
@@ -376,7 +363,7 @@ export default function Upload() {
           flex-direction: column;
           align-items: center;
           gap: 0.75rem;
-          color: #7f8c8d;
+          color: #666;
         }
 
         .upload-icon {
@@ -387,12 +374,11 @@ export default function Upload() {
         .file-placeholder span {
           font-size: 1.05rem;
           font-weight: 500;
-          color: #34495e;
         }
 
         .file-placeholder small {
           font-size: 0.875rem;
-          color: #95a5a6;
+          color: #999;
         }
 
         .file-selected {
@@ -401,9 +387,9 @@ export default function Upload() {
           justify-content: center;
           gap: 1rem;
           padding: 1rem;
-          background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+          background: #f0f8f0;
           border-radius: 8px;
-          border: 2px solid #27ae60;
+          border: 2px solid #4CAF50;
         }
 
         .file-icon {
@@ -412,55 +398,47 @@ export default function Upload() {
 
         .file-name {
           font-weight: 600;
-          color: #27ae60;
+          color: #4CAF50;
           flex: 1;
           text-align: left;
         }
 
         .file-size {
           font-size: 0.9rem;
-          color: #7f8c8d;
-          font-weight: 500;
+          color: #666;
         }
 
         .file-success {
-          color: #27ae60;
+          color: #4CAF50;
           font-size: 0.9rem;
-          font-weight: 600;
+          font-weight: 500;
           text-align: center;
-          margin-top: 0.75rem;
-          padding: 0.75rem;
-          background: #e8f5e9;
-          border-radius: 8px;
+          margin-top: 0.5rem;
         }
 
         .continue-button {
           width: 100%;
           padding: 1.25rem;
-          font-size: 1.125rem;
-          font-weight: 600;
-          border-radius: 10px;
+          font-size: 1.25rem;
+          font-weight: 700;
+          border-radius: 12px;
           border: none;
           cursor: pointer;
           transition: all 0.3s ease;
           margin-top: 1rem;
-          background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
-          box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-          letter-spacing: 0.5px;
         }
 
         .continue-button:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+          box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
 
         .continue-button:disabled {
           opacity: 0.6;
           cursor: not-allowed;
           transform: none;
-          background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-          box-shadow: none;
         }
 
         @media (max-width: 768px) {
@@ -473,7 +451,7 @@ export default function Upload() {
           }
 
           .upload-title {
-            font-size: 1.75rem;
+            font-size: 2rem;
           }
 
           .dashboard-nav-button {
