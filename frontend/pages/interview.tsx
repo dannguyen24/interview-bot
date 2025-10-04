@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import { useWebSocket } from '../contexts/WebSocketContext'
 import { AudioRecorder } from '../components/AudioRecorder'
 import { AudioPlayer } from '../components/AudioPlayer'
+import { isMockMode } from '../lib/mockData'
 
 interface Question {
   id: string
@@ -40,6 +41,30 @@ export default function Interview() {
   const [parsedResume, setParsedResume] = useState<any>(null)
   const [parsedJobDescription, setParsedJobDescription] = useState<any>(null)
   const [resumeFileName, setResumeFileName] = useState('')
+
+  // Debug info
+  const mockMode = isMockMode()
+  console.log('🔍 Interview page loaded:', { mockMode })
+
+  // Interview timer
+  const [interviewTime, setInterviewTime] = useState(0)
+  const interviewTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Format time as MM:SS
+  const formatInterviewTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (interviewTimerRef.current) {
+        clearInterval(interviewTimerRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     // Get job description URL and parsed data from localStorage
@@ -78,8 +103,21 @@ export default function Interview() {
   }, [router])
 
   useEffect(() => {
-    if (!socket || !isConnected) return
+    console.log('🔍 Interview useEffect triggered:', { socket: !!socket, isConnected, parsedResume: !!parsedResume, parsedJobDescription: !!parsedJobDescription })
+    
+    if (!socket || !isConnected) {
+      console.log('❌ Missing socket or connection:', { socket: !!socket, isConnected })
+      return
+    }
 
+    if (!parsedResume || !parsedJobDescription) {
+      console.log('❌ Missing data:', { parsedResume: !!parsedResume, parsedJobDescription: !!parsedJobDescription })
+      return
+    }
+
+    console.log('🚀 Starting interview with data')
+    setInterviewState(prev => ({ ...prev, isGeneratingQuestions: true }))
+    
     // Send interview start request
     socket.emit('start_interview', {
       parsedResume,
@@ -95,6 +133,13 @@ export default function Interview() {
         isGeneratingQuestions: false,
         isPlayingQuestion: true
       }))
+      
+      // Start interview timer
+      if (!interviewTimerRef.current) {
+        interviewTimerRef.current = setInterval(() => {
+          setInterviewTime(prev => prev + 1)
+        }, 1000)
+      }
       
       // Auto-play first question
       if (questions.length > 0) {
@@ -134,8 +179,8 @@ export default function Interview() {
         isComplete: true
       }))
       
-      // Store results and navigate
-      localStorage.setItem('interviewResults', JSON.stringify(results))
+      // Store results in sessionStorage (temporary - will be saved to MongoDB on results page)
+      sessionStorage.setItem('currentInterviewResults', JSON.stringify(results))
       setTimeout(() => {
         router.push('/results')
       }, 3000)
@@ -238,6 +283,27 @@ export default function Interview() {
         <Head>
           <title>Interview Bot - Generating Questions</title>
         </Head>
+        
+        {/* Debug Panel */}
+        <div style={{ 
+          position: 'fixed', 
+          top: '10px', 
+          right: '10px', 
+          background: 'rgba(0,0,0,0.8)', 
+          color: 'white', 
+          padding: '10px', 
+          borderRadius: '5px',
+          fontSize: '12px',
+          zIndex: 1000
+        }}>
+          <div>Mock Mode: {mockMode ? '✅' : '❌'}</div>
+          <div>Socket: {socket ? '✅' : '❌'}</div>
+          <div>Connected: {isConnected ? '✅' : '❌'}</div>
+          <div>Resume: {parsedResume ? '✅' : '❌'}</div>
+          <div>JobDesc: {parsedJobDescription ? '✅' : '❌'}</div>
+          <div>Error: {connectionError || 'None'}</div>
+        </div>
+
         <div className="generating-message">
           <h2>🤖 AI is generating your personalized questions...</h2>
           <div className="loading-spinner"></div>
@@ -272,7 +338,14 @@ export default function Interview() {
       </Head>
 
       <div className="interview-header">
-        <h1>AI Interview Practice</h1>
+        <div className="header-content">
+          <h1>AI Interview Practice</h1>
+          <div className="interview-timer">
+            <span className="timer-icon">⏱️</span>
+            <span className="timer-text">{formatInterviewTime(interviewTime)}</span>
+            <span className="timer-limit">/ 40:00</span>
+          </div>
+        </div>
         <div className="progress-section">
           <div className="progress-bar">
             <div 
@@ -304,12 +377,48 @@ export default function Interview() {
                   setInterviewState(prev => ({ ...prev, isPlayingQuestion: false }))
                 }}
               />
+              
+              {interviewState.isPlayingQuestion && (
+                <button 
+                  className="skip-audio-button"
+                  onClick={() => setInterviewState(prev => ({ ...prev, isPlayingQuestion: false }))}
+                >
+                  Skip Audio & Start Recording
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
 
       <div className="recording-section">
+        {/* Debug info for recording state */}
+        <div style={{ 
+          background: 'rgba(0,0,0,0.1)', 
+          padding: '10px', 
+          marginBottom: '10px',
+          borderRadius: '5px',
+          fontSize: '14px'
+        }}>
+          <div>isPlayingQuestion: {interviewState.isPlayingQuestion ? '🔴 TRUE (disabled)' : '✅ FALSE'}</div>
+          <div>isProcessingAnswer: {interviewState.isProcessingAnswer ? '🔴 TRUE (disabled)' : '✅ FALSE'}</div>
+          <div>Button disabled: {(interviewState.isProcessingAnswer || interviewState.isPlayingQuestion) ? '🔴 YES' : '✅ NO'}</div>
+        </div>
+        
+        {/* Always show skip button when audio is "playing" */}
+        {interviewState.isPlayingQuestion && (
+          <button 
+            className="skip-audio-button"
+            onClick={() => {
+              console.log('🎯 Skipping audio, enabling recording...')
+              setInterviewState(prev => ({ ...prev, isPlayingQuestion: false }))
+            }}
+            style={{ marginBottom: '1rem' }}
+          >
+            ⏭️ Skip Audio & Enable Recording
+          </button>
+        )}
+        
         <AudioRecorder
           onAudioData={handleAudioData}
           onRecordingStateChange={(isRecording) => {

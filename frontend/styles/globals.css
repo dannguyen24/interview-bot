@@ -770,25 +770,40 @@ a {
 }
 
 .follow-up-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 2rem;
+  border-left: 4px solid #667eea;
 }
 
 .follow-up-section h2 {
-  color: white;
+  color: #667eea;
+  margin-bottom: 1rem;
 }
 
 .follow-up-question {
-  background: rgba(255, 255, 255, 0.1);
+  background: white;
   padding: 1.5rem;
   border-radius: 10px;
-  backdrop-filter: blur(10px);
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.follow-up-question p {
+  color: #333;
+  margin: 0.5rem 0;
+}
+
+.follow-up-question p strong {
+  color: #667eea;
 }
 
 .follow-up-text {
   font-size: 1.2rem;
   font-style: italic;
   margin-top: 1rem;
+  color: #555;
+  line-height: 1.6;
 }
 
 .results-footer {
@@ -859,4 +874,80 @@ a {
   .score-number {
     font-size: 2rem;
   }
+}
+
+/* Interview Timer Styles */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.interview-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.timer-icon {
+  font-size: 1.5rem;
+}
+
+.timer-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  font-family: 'Courier New', monospace;
+  min-width: 60px;
+  text-align: center;
+}
+
+.timer-limit {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .interview-timer {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Skip Audio Button */
+.skip-audio-button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.skip-audio-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.skip-audio-button:active {
+  transform: translateY(0);
 }
